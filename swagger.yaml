@@ -1,0 +1,1316 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'IELTS Speaking Mocktest Platform APIs'
+  description: 'This document provides APIs for IELTS test takers to find speaking partners and practice for their speaking tests through mock tests. This project was developed as part of the Full Stack Army course.'
+  contact:
+    name: Saied Islam Shuvo
+    email: saiedislam.shuvo1124@gmail.com
+servers:
+  - description: Dev
+    url: 'http://localhost:5000/api/v1'
+tags:
+  - name: Auth
+    description: Public
+  - name: Account
+    description: Private
+  - name: Mocktest
+    description: Public, Private
+  - name: Organization
+    description: Public, Private
+  - name: Trainer
+    description: Public, Private
+  - name: User
+    description: Administration
+paths:
+  '/auth/register':
+    post:
+      tags: [Auth]
+      description: create a new user account
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Saied Islam Shuvo
+                email:
+                  type: string
+                  format: email
+                  example: saiedislamshuvo@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: 'Pass1234'
+              required: [name, email, password]
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 655a1c3ba69e486acfe78980
+                      name:
+                        type: string
+                        example: Saied Islam Shuvo
+                      email:
+                        type: string
+                        example: saiedislamshuvo@gmail.com
+                      role:
+                        type: string
+                        example: user
+                      access_token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NWExYzNiYTY5ZTQ4NmFjZmU3ODk4MCIsIm5hbWUiOiJTYWllZCBJc2xhbSBTaHV2byIsImVtYWlsIjoic2FpZWRpc2xhbXNodXZvQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzAwNDA0Mjg0LCJleHAiOjE3MDA0OTA2ODR9.cibNPipIA3Zd9ctSMnsmY0qY8XpLZKU4C4SRR6_ZRag
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          '$ref': '#/components/responses/500'
+  '/auth/login':
+    post:
+      tags: [Auth]
+      description: login to user account
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: saiedislamshuvo@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: 'Pass1234'
+              required: [email, password]
+      responses:
+        '200':
+          description: Login successful
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 655a1c3ba69e486acfe78980
+                      name:
+                        type: string
+                        example: Saied Islam Shuvo
+                      email:
+                        type: string
+                        example: saiedislamshuvo@gmail.com
+                      role:
+                        type: string
+                        example: user
+                      access_token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NWExYzNiYTY5ZTQ4NmFjZmU3ODk4MCIsIm5hbWUiOiJTYWllZCBJc2xhbSBTaHV2byIsImVtYWlsIjoic2FpZWRpc2xhbXNodXZvQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzAwNDA0Mjg0LCJleHAiOjE3MDA0OTA2ODR9.cibNPipIA3Zd9ctSMnsmY0qY8XpLZKU4C4SRR6_ZRag
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          '$ref': '#/components/responses/500'
+  '/users':
+    get:
+      security:
+        - bearerAuth: []
+      tags: [User]
+      description: get authenticated users
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/orderByParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - in: query
+          name: name
+          description: Name of the user
+          schema:
+            type: string
+        - in: query
+          name: email
+          description: Email of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Return a list of users
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/User'
+                  - $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      tags: [User]
+      description: create a new user
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserCreateDTO'
+      responses:
+        '201':
+          description: User Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/users/{id}':
+    get:
+      tags: [User]
+      description: Fetch a single user
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: 'Get user by id'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      security:
+        - bearerAuth: []
+      tags: [User]
+      description: Update entire user
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserUpdateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      tags: [User]
+      description: Partially update an user
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserUpdateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      tags: [User]
+      description: Delete an user by id
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: 'User deleted successfully'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/account/request-to-become-trainer':
+    get:
+      security:
+        - bearerAuth: []
+      tags: [Trainer, Account]
+      description: create a new individual trainer
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/TrainerIndividualCreateDTO'
+      responses:
+        '201':
+          description: User Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/account/mocktests':
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Mocktest, Trainer, Account]
+      description: create a new mocktest, that mocktest assign to individual trainer
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/MocktestCreateToTrainerDTO'
+      responses:
+        '201':
+          description: Mocktest Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Mocktest Created Successfully
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'   
+  '/trainers':
+    get:
+      tags: [Trainer]
+      description: get trainers
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/orderByParam'
+        - $ref: '#/components/parameters/sortByParam'
+      responses:
+        '200':
+          description: Return a list of trianers
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/Trainer'
+                  - $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Trainer]
+      description: create a new individual trainer
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/TrainerIndividualCreateDTO'
+      responses:
+        '201':
+          description: User Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/trainers/{id}':
+    get:
+      tags: [Trainer]
+      description: Fetch a single trainer
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: 'Get user by id'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      tags: [Trainer]
+      description: Partially update an trainer
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/TrainerUpdateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      tags: [Trainer]
+      description: Delete an trainer by id
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: 'Trainer deleted successfully'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/organizations':
+    get:
+      tags: [Organization]
+      description: get organizations
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/orderByParam'
+        - $ref: '#/components/parameters/sortByParam'
+      responses:
+        '200':
+          description: Return a list of organizations
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/Organization'
+                  - $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Organization]
+      description: create a new organization
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/OrgCreateDTO'
+      responses:
+        '201':
+          description: Organization Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Organization Created successful
+                  data:
+                    $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/organizations/{id}':
+    get:
+      tags: [Organization]
+      description: Fetch a single Organization
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: 'Get Organization by id'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    put:
+      security:
+        - bearerAuth: []
+      tags: [Organization]
+      description: Update entire Organization
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/OrgCreateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      tags: [Organization]
+      description: Partially update an Organization
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/OrgCreateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      tags: [Organization]
+      description: Delete an Organization by id
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: 'Organization deleted successfully'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/organizations/{id}/trainer':
+    get:
+      tags: [Trainer, Organization]
+      description: get trainers by organization id
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/orderByParam'
+        - $ref: '#/components/parameters/sortByParam'
+      responses:
+        '200':
+          description: Return a list of trainer
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/Trainer'
+                  - $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Trainer, Organization]
+      description: create a new trainer that belongs to organization
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/TrainerCreateDTO'
+      responses:
+        '201':
+          description: User Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Register successful
+                  data:
+                    $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  '/mocktests':
+    get:
+      tags: [Mocktest]
+      description: get mocktests
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/orderByParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - in: query
+          name: userId
+          description: Id of the user
+          schema:
+            type: string
+        - in: query
+          name: trainerId
+          description: Id of the trainer
+          schema:
+            type: string
+        - in: query
+          name: organizationId
+          description: Id of the organization
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Return a list of mocktests
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: 
+                          $ref: '#/components/schemas/User'
+                  - $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Mocktest, Trainer]
+      description: create a new mocktest, that mocktest assign to individual trainer
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/MocktestCreateToTrainerDTO'
+      responses:
+        '201':
+          description: Mocktest Created Successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Mocktest Created Successfully
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'   
+  '/mocktests/{id}':
+    get:
+      tags: [Mocktest]
+      description: Fetch a single Mocktest
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: 'Get Mocktest by id'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Mocktest'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      tags: [Mocktest]
+      description: Partially update an Mocktest
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/OrgCreateDTO'
+      responses:
+        '200':
+          description: 'Successfully Updated'
+          content:
+            'application/json':
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/Mocktest'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      tags: [Mocktest]
+      description: Delete an Mocktest by id
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: 'Mocktest deleted successfully'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: 655a1c3ba69e486acfe78980
+            name:
+              type: string
+              example: Saied Islam Shuvo
+            email:
+              type: string
+              example: saiedislamshuvo@gmail.com
+            role:
+              type: string
+              example: user
+            status:
+              type: string
+              example: approved
+        - $ref: '#/components/schemas/Timestamp'
+    UserCreateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: test user
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        password:
+          type: string
+          format: password
+          example: test1234
+        role:
+          type: string
+          enum:
+            - user
+            - trainer
+            - admin
+          example: user
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - declined
+            - blocked
+          example: approved
+      required: [name, email, password]
+    UserUpdateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: test user
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        role:
+          type: string
+          enum:
+            - user
+            - trainer
+            - admin
+          example: user
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - declined
+            - blocked
+          example: approved
+      required: [name, email]
+    Trainer:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the document
+              example: "655a5fbe5596215707e01230"
+            status:
+              type: string
+              description: Current status of the document
+              example: "approved"
+            user:
+              type: object
+              description: Information about the associated user
+              properties:
+                name:
+                  type: string
+                  description: User's name
+                  example: "test user"
+                email:
+                  type: string
+                  description: User's email address
+                  example: "test@example.com"
+        - $ref: '#/components/schemas/Timestamp'
+    TrainerIndividualCreateDTO:
+      type: object
+      properties:
+        user:
+          type: string
+          description: Id of user
+        status:
+          type: string
+          enum: ['pending', 'approved', 'declined', 'blocked']
+          example: approved
+    TrainerCreateDTO:
+      type: object
+      properties:
+        user:
+          type: string
+          description: Id of user
+        organization: 
+          type: string
+          description: Id of organization
+        status:
+          type: string
+          enum: ['pending', 'approved', 'declined', 'blocked']
+          example: approved
+    TrainerUpdateDTO:
+      type: object
+      properties:
+        organization: 
+          type: string
+          description: Id of organization
+        status:
+          type: string
+          enum: ['pending', 'approved', 'declined', 'blocked']
+          example: approved
+    Organization:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: 655a1c3ba69e486acfe78980
+            name:
+              type: string
+              example: Org One
+            email:
+              type: string
+              example: saiedislamshuvo@gmail.com
+            createdBy:
+              type: object
+              description: Information about the associated user
+              properties:
+                name:
+                  type: string
+                  description: User's name
+                  example: "Saied Islam Shuvo"
+                email:
+                  type: string
+                  description: User's email address
+                  example: "saiedislamshuvo@gmail.com"
+            status:
+              type: string
+              example: approved
+        - $ref: '#/components/schemas/Timestamp'
+    OrgCreateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          example: test org
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - declined
+            - blocked
+          example: approved
+      required: [name, email]
+    Mocktest:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the document
+              example: "655a5fbe5596215707e01230"
+            status:
+              type: string
+              description: Current status of the document
+              example: "approved"
+        - $ref: '#/components/schemas/Timestamp'
+    MocktestCreateToTrainerDTO:
+      type: object
+      properties:
+        meetingStartAt:
+          type: string
+          example: '2023-11-21T18:55:20.314Z'
+        trainerId:
+          type: string
+      required: [trainerId]
+    MocktestCreateToOrgDTO:
+      type: object
+      properties:
+        meetingStartAt:
+          type: string
+          example: '2023-11-21T18:55:20.314Z'
+        organizationId:
+          type: string
+      required: [organizationId]
+    MocktestUpdateDTO:
+      type: object
+      properties:
+        trainerId:
+          type: string
+        status:
+          enum: ['pending', 'approved', 'declined', 'completed', 'expired']
+          example: "approved"
+      required: [trainerId]
+    Timestamp:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [createdAt, updatedAt]
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 10
+        total:
+          type: integer
+          description: Total number of items
+          example: 11
+        from:
+          type: integer
+          description: Index of the first item in the current page
+          example: 1
+        to:
+          type: integer
+          description: Index of the last item in the current page
+          example: 2
+        next:
+          type: string
+          description: URL of the next page
+          example: "/api/v1/resource?page=2&limit=10&order_by=dsc"
+        previous:
+          type: string
+          description: URL of the previous page
+          example: ""
+        links:
+          type: array
+          description: Array of links to pagination resources
+          items:
+            type: string
+            example: "/api/v1/resource?page=1&limit=10&order_by=dsc"
+  responses:
+    '500':
+      description: 'Internal Server Error'
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: We are sorry for the inconvenience. Please try again later
+    '400':
+      description: 'Bad Request'
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: Bad Request
+    '401':
+      description: Unauthorized
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: You don't have the right permissions
+    '404':
+      description: Resource Not Found
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Requested resource not found
+  parameters:
+    pageParam:
+      in: query
+      name: page
+      description: current page number
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 1
+    limitParam:
+      in: query
+      name: limit
+      description: maximum items to be returned
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 10
+    orderByParam:
+      in: query
+      name: order_by
+      description: type of sort (asc or dsc)
+      schema:
+        type: string
+        enum: [asc, dsc]
+        example: dsc
+    sortByParam:
+      in: query
+      name: sort_by
+      description: Sort key
+      schema:
+        type: string
+        example: updatedAt
+    searchParam:
+      in: query
+      name: search
+      description: Search term
+      schema:
+        type: string
+    idPathParam:
+      in: path
+      name: id
+      required: true
+      description: Resource ID
+      schema:
+        type: string
