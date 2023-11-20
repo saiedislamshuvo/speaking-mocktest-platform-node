@@ -3,6 +3,7 @@ const userService = require('../lib/user');
 const { authenticationError } = require('../core/utils/error');
 
 const authenticate = async (req, _res, next) => {
+	// make sure you have seed the user
 	if (process.env.AUTH_MOCK || false) {
 		const user = await userService.findUserByEmail('test@example.com');
 		if (!user) {
